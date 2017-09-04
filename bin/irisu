@@ -1,0 +1,56 @@
+#!/usr/bin/env ruby
+
+require 'irisu'
+require 'dangeru'
+args = ARGV
+
+case args[0]
+when 'help'
+  puts "irisu - the Awoo CLI client.\nUsage: irisu <command> <args>\nCommands: board, meta, thread, help"
+
+when 'auth'
+  puts "TODO"
+
+when 'board'
+  if args.length < 2 then
+    puts "error, board not specified"
+  else
+    api = Dangeru.new("dangeru.us", true)
+    response = api.get_board(args[1])
+
+    response.each do |key|
+      payload = "(#{key["post_id"].to_s}): #{key["title"]}"
+      if key["sticky"] then payload += " [STICKY]" end
+      if key["is_locked"] then payload += " [LOCKED]" end
+      puts payload
+    end
+  end
+
+when 'meta'
+  if args.length < 2 then
+    puts "error, id not specified"
+  else
+    api = Dangeru.new("dangeru.us", true)
+    response = api.get_thread_metadata(args[1])
+
+    puts "Post number ##{response["post_id"].to_s}, Title: '#{response["title"]}', OP ID: #{response["hash"]}, Replies: #{response["number_of_replies"].to_s}"
+  end
+
+when 'thread'
+  if args.length < 2 then
+    puts "error, id not specified"
+  else
+    api = Dangeru.new("dangeru.us", true)
+    response = api.get_thread_replies(args[1])
+
+    response.each do |key|
+      payload = "(#{key["post_id"].to_s}, #{key["hash"]})\n"
+      if key["capcode"] then payload += "##Janitor:#{key["capcode"]}##\n" end
+      payload += "| #{key["comment"]}\n\n"
+      puts payload
+    end
+  end
+
+else
+  puts "irisu - unrecognized command.\nrun 'irisu help' for commands"
+end

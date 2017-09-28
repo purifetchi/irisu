@@ -2,6 +2,7 @@
 
 require 'irisu'
 require 'dangeru'
+require 'colorize'
 args = ARGV
 
 case args[0]
@@ -19,9 +20,9 @@ when 'board'
     response = api.get_board(args[1])
 
     response.each do |key|
-      payload = "(#{key["post_id"].to_s}): #{key["title"]}"
-      if key["sticky"] then payload += " [STICKY]" end
-      if key["is_locked"] then payload += " [LOCKED]" end
+      payload = "(#{key["post_id"].to_s.colorize(:light_blue)}): #{key["title"]}"
+      if key["sticky"] then payload += " [STICKY]".colorize(:yellow) end
+      if key["is_locked"] then payload += " [LOCKED]".colorize(:red) end
       puts payload
     end
   end
@@ -45,9 +46,9 @@ when 'thread'
 
     response.each do |key|
       payload = ""
-      if key["is_op"] then payload += "[#{key["title"]}]\n" end
-      payload += "(#{key["post_id"].to_s}, #{key["hash"]})\n"
-      if key["capcode"] then payload += "##Janitor:#{key["capcode"]}##\n" end
+      if key["is_op"] then payload += "[#{key["title"].colorize(:green)}]\n" end
+      payload += "(#{key["post_id"].to_s.colorize(:light_blue)}, #{key["hash"].colorize(:light_red)})\n"
+      if key["capcode"] then payload += "###{key["capcode"]}##\n".colorize(:red) end
       payload += "| #{key["comment"]}\n\n"
       puts payload
     end
@@ -59,10 +60,10 @@ when 'post'
   else
     api = Dangeru.new("dangeru.us", true)
 
-    puts "Posting a new thread to #{args[1]}"
-    print "Title> "
+    puts "Posting a new thread to " + "/#{args[1]}/".colorize(:yellow)
+    print "Title> ".colorize(:blue)
     title = STDIN.gets.chomp
-    print "Content> "
+    print "Content> ".colorize(:blue)
     content = STDIN.gets.chomp
 
     api.post_op(args[1], title, content)
@@ -74,8 +75,8 @@ when 'reply'
   else
     api = Dangeru.new("dangeru.us", true)
 
-    puts "Replying to thread #{args[1]} on board /#{args[2]}/"
-    print "Content> "
+    puts "Replying to thread " + "#{args[1]}".colorize(:light_blue) + " on board " + "/#{args[2]}/".colorize(:yellow)
+    print "Content> ".colorize(:blue)
     content = STDIN.gets.chomp
 
     api.reply(args[1].to_i, args[2], content)
